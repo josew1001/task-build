@@ -6,6 +6,23 @@
 
 import './bootstrap';
 import { createApp } from 'vue';
+import Swal from 'sweetalert2';
+window.Swal = Swal
+const toast = Swal.mixin({
+  toast:true,
+  position:'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true
+})
+window.toast = toast;
+
+
+import app from './components/App.vue'
+
+import router from './router'
+
+createApp(app).use(router).mount('#app')
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -13,27 +30,10 @@ import { createApp } from 'vue';
  * to use in your application's views. An example is included for you.
  */
 
-const app = createApp({});
+// const app = createApp({});
 
-import ExampleComponent from './components/ExampleComponent.vue';
-app.component('example-component', ExampleComponent);
+// import ExampleComponent from './components/ExampleComponent.vue';
+// app.component('example-component', ExampleComponent);
 
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
+// app.mount('#app');
 
-// Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, definition]) => {
-//     app.component(path.split('/').pop().replace(/\.\w+$/, ''), definition.default);
-// });
-
-/**
- * Finally, we will attach the application instance to a HTML element with
- * an "id" attribute of "app". This element is included with the "auth"
- * scaffolding. Otherwise, you will need to add an element yourself.
- */
-
-app.mount('#app');

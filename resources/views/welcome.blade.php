@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>Proprli</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -26,7 +26,10 @@
     </head>
     <body class="antialiased">
 
-        <h1>ateste</h1>
+    <main class="container">
+        <div id="app">
+        </div>
+    </div>
 
         <!-- bootstrap -->
         <script src="/bootstrap-5.2.3/dist/js/bootstrap.js"></script>  
