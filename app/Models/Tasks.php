@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class tasks extends Model
+class Tasks extends Model
 {
     use HasFactory;
 
@@ -28,7 +28,7 @@ class tasks extends Model
     }
 
     public function building() {
-        return $this->belongsTo(buildings::class, 'building_id');
+        return $this->belongsTo(Buildings::class, 'building_id');
     }
     
 }

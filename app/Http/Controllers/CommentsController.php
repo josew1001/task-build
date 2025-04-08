@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\comments;
-use App\Models\tasks;
+use App\Models\Comments;
+use App\Models\Tasks;
 use App\Models\User;
 use Illuminate\Http\Request;
 // use Carbon\Carbon;  // format data
@@ -16,7 +16,7 @@ class CommentsController extends Controller
 
 
         // Find the task based on the provided task ID (talkId).
-        $task = tasks::with('userCreated', 'building', 'userUpdated')->find($request->talkId);
+        $task = Tasks::with('userCreated', 'building', 'userUpdated')->find($request->talkId);
 
         // If task is not found, return an empty response or error (based on preference).
         if (!$task) {
@@ -28,7 +28,7 @@ class CommentsController extends Controller
 
 
         // Get comments for the task.
-        $comments = comments::query()
+        $comments = Comments::query()
             ->with('userCreated')
             ->where('task_id', $request->talkId)
             ->get();
@@ -50,13 +50,13 @@ class CommentsController extends Controller
     {
 
         // Update task with the provided user_id and task status.
-        $task = tasks::find($request->task_id);
+        $task = Tasks::find($request->task_id);
         $task->user_updated_id = $request->user_id;
         $task->status = $request->task_status;
         $task->save();
 
         // Create and save the comment.
-        $comments = new comments();
+        $comments = new Comments();
         $comments->content = $request->content;
         $comments->task_id = $request->task_id;
         $comments->user_created_id = $request->user_id;

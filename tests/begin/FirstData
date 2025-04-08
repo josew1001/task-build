@@ -1,0 +1,14 @@
+INSERT INTO public.users(
+	name, email, password)
+	VALUES ( 'Matheus', 'matheus@matheus.com', '12341234'),
+    ( 'Marcos', 'marcos@marcos.com', '12341234'),
+	( 'Lucas', 'lucas@lucas.com', '12341234'),
+	( 'Joao', 'joao@joao.com', '12341234');
+
+
+INSERT INTO public.buildings(
+	name, address, user_created_id)
+	VALUES ( 'Copacabana', 'Copacabana', 1 ),
+	( 'Palace', 'Palace', 1 ),
+	( 'Itacaunas', 'Itacaunas', 1 ),
+	( 'Mirate', 'Mirate', 2 )

@@ -5,11 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class comments extends Model
+class Buildings extends Model
 {
     use HasFactory;
-
-    public function userCreated() {
-        return $this->belongsTo(User::class, 'user_created_id');
-    }
+    
 }

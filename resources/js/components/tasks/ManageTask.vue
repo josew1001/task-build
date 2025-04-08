@@ -81,10 +81,14 @@ const newTask = () => {
 
     axios.post('/api/task', form)
         .then((response) => {
-            router.push('/');
-            getTasks();
-            clearForm();
-            toast.fire({ icon: "success", title: "Task Added Successfully" });
+            if (response.data.success) {
+                router.push('/');
+                getTasks();
+                clearForm();
+                toast.fire({ icon: "success", title: response.data.message });
+            } else {
+                toast.fire({ icon: "error", title: response.data.message });
+            }
         })
         .catch((error) => {
             if (error.response.status === 422) {
@@ -188,7 +192,7 @@ watch([searchQuery, searchAssignedUser, searchBuilding, searchstartDate, searche
                                             <select class="form-select" name="building" v-model="form.building">
                                                 <option v-for="building in buildings" :key="building.id" :value="building.id">{{ building.name }}</option>
                                             </select>
-                                            <label for="building">Building: {{ form.building }} </label>
+                                            <label for="building">Building: </label>
                                         </div>
                                     </div>
                                     <div class="col-md-6 mt-1">

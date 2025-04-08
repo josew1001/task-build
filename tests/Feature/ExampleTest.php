@@ -5,6 +5,8 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+// $ php artisan test --filter=ExampleTest
+
 class ExampleTest extends TestCase
 {
     /**
