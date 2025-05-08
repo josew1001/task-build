@@ -9,21 +9,6 @@ let task = ref([]);
 let comments = ref([]);
 let users = ref([]);
 
-// Function to get task description
-const getTaskDescrition = async () => {
-    const taskId = route.params.id;
-    const userId = route.params.user_id;
-    console.log('rotad user id', userId);
-    try {
-        let response = await axios.get('/api/taskDescription?talkId=' + taskId);
-        task.value = response.data.task;
-        comments.value = response.data.comments;
-        users.value = response.data.users;
-    } catch (error) {
-        console.error("Erro ao buscar tarefa:", error);
-    }
-}
-
 // Reactive form object for comments
 const formComment = reactive({
     content: "",
@@ -32,6 +17,28 @@ const formComment = reactive({
     task_id: "",
     task_status: ""
 });
+
+// Function to get task description
+const getTaskDescrition = async () => {
+    const taskId = route.params.id;
+    try {
+        let response = await axios.get('/api/taskDescription?talkId=' + taskId);
+        task.value = response.data.task;
+        comments.value = response.data.comments;
+        users.value = response.data.users;
+        
+        // Handle Failed
+        if (!response.data.success) {
+            console.error("Failed to load task:", response.data.message);
+            return;
+        }    
+        
+        // Handle Sucess
+        toast.fire({ icon: "success", title: response.data.message || "Task loaded successfully." });
+    } catch (error) {
+        toast.fire({ icon: "error", title: error.response.data.message || "Error accessing base data." });
+    }
+}
 
 // Function to add a new comment
 const newComment = async () => {
@@ -49,11 +56,20 @@ const newComment = async () => {
 
     try {
         let response = await axios.post('/api/taskDescription', formComment);
+        
         getTaskDescrition();
-        toast.fire({ icon: "success", title: "Task Added Successfully" });
+        // Handle Failed
+        if (!response.data.success) {
+            console.error("Failed to load task:", response.data.message);
+            return;
+        }  
+
+
+        toast.fire({ icon: "success", title: "Task Added Successfully" });        
         clearForm();
     } catch (error) {
-        console.error("Erro ao buscar tarefa:", error);
+        toast.fire({ icon: "error", title: error.response.data.message || "CCCCCCCCCCcccccError accessing base data." });
+        console.log( error.response.data.error );
     }
 }
 

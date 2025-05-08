@@ -16,8 +16,26 @@ let users = ref([]);
 /**
  * Fetches the tasks based on the search query and filter options.
  */
+
+// const getTasks = async () => {
+//     let response = await axios.get('/api/task', {
+//         params: {
+//             searchQuery: searchQuery.value,
+//             assignedUser: searchAssignedUser.value,
+//             building: searchBuilding.value,
+//             startDate: searchstartDate.value,
+//             endDate: searchendDate.value
+//         }
+//     });
+
+//     tasks.value = response.data.tasks;
+//     buildings.value = response.data.buildings;
+//     users.value = response.data.users;
+// };
+
 const getTasks = async () => {
-    let response = await axios.get('/api/task', {
+
+    axios.get('/api/task', {
         params: {
             searchQuery: searchQuery.value,
             assignedUser: searchAssignedUser.value,
@@ -25,11 +43,21 @@ const getTasks = async () => {
             startDate: searchstartDate.value,
             endDate: searchendDate.value
         }
+    })
+    .then((response) => {
+        if (response.data.success) {
+            tasks.value = response.data.tasks;
+            buildings.value = response.data.buildings;
+            users.value = response.data.users;
+            // toast.fire({ icon: "success", title: "Tasks loaded successfully!" });
+        } else {
+            toast.fire({ icon: "error", title: response.data.message || "Failed to load tasks." });
+        }
+    })
+    .catch((error) => {
+        console.error(error);
+        toast.fire({ icon: "error", title: "Server error ("+ error.response.status +") while loading tasks." });
     });
-
-    tasks.value = response.data.tasks;
-    buildings.value = response.data.buildings;
-    users.value = response.data.users;
 };
 
 /**
@@ -91,9 +119,8 @@ const newTask = () => {
             }
         })
         .catch((error) => {
-            if (error.response.status === 422) {
-                error.value = error.response.data.errors;
-            }
+            toast.fire({ icon: "error", title: "Server error ("+ error.response.status +") while loading tasks." });
+            console.error(error);
         });
 };
 

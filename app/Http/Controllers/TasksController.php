@@ -40,41 +40,49 @@ class TasksController extends Controller
 
     public function index(Request $request)
     {
-        // Start the query to retrieve tasks with associated data (userCreated, building, userUpdated).
-        $tasks = Tasks::with('userCreated', 'building', 'userUpdated');
-
-        // Apply search filters if provided
-        if ($request->searchQuery != '') {
-            $tasks = $tasks->where('title', 'like', '%' . $request->searchQuery . '%')
-                ->orWhere('description', 'like', '%' . $request->searchQuery . '%');
+        try{
+            // Start the query to retrieve tasks with associated data (userCreated, building, userUpdated).
+            $tasks = Tasks::with('userCreated', 'building', 'userUpdated');
+    
+            // Apply search filters if provided
+            if ($request->searchQuery != '') {
+                $tasks = $tasks->where('title', 'like', '%' . $request->searchQuery . '%')
+                    ->orWhere('description', 'like', '%' . $request->searchQuery . '%');
+            }
+    
+            if ($request->assignedUser != '') {
+               $tasks = $tasks->where('user_updated_id', $request->assignedUser);
+            }
+    
+            if ($request->building != '') {
+                $tasks = $tasks->where('building_id', $request->building);
+            }
+    
+            if ($request->startDate != '' && $request->endDate != '') {
+               $tasks = $tasks->whereBetween('created_at', [$request->startDate, $request->endDate]);
+            }
+    
+            $tasks = $tasks->latest()->get();
+    
+            // Retrieve the filtered tasks, ordered by the latest
+            $buildings = Buildings::latest()->get();
+    
+            // Load the buildings and users for dropdown options
+            $users = User::latest()->get();
+    
+            return response()->json([
+                'success' => true,
+                'tasks' => $tasks,
+                'buildings' => $buildings,
+                'users' => $users
+            ], 200); // 200 OK
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Task creation failed',
+                'error' => $e->getMessage()
+            ], 500); // 500 Internal Server Error
         }
-
-        if ($request->assignedUser != '') {
-           $tasks = $tasks->where('user_updated_id', $request->assignedUser);
-        }
-
-        if ($request->building != '') {
-            $tasks = $tasks->where('building_id', $request->building);
-        }
-
-        if ($request->startDate != '' && $request->endDate != '') {
-           $tasks = $tasks->whereBetween('created_at', [$request->startDate, $request->endDate]);
-        }
-
-        $tasks = $tasks->latest()->get();
-
-        // Retrieve the filtered tasks, ordered by the latest
-        $buildings = Buildings::latest()->get();
-
-        // Load the buildings and users for dropdown options
-        $users = User::latest()->get();
-
-        return response()->json([
-            'tasks' => $tasks,
-            'buildings' => $buildings,
-            'users' => $users
-        ]);
-
     }
 
 }
