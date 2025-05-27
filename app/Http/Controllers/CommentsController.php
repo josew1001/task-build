@@ -2,27 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comments;
-use App\Models\Tasks;
-use App\Models\User;
+
+use App\Services\TaskService;
+use App\Services\CommentService;
+use App\Services\UserService;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
 // use Carbon\Carbon;  // format data
 
 class CommentsController extends Controller
 {
+    
+    public function __construct(
+        protected TaskService $taskService,
+        protected CommentService $commentService,
+        protected UserService $userService,
+        protected ResponseService $responseService
+    ) {}
 
     public function index(Request $request)
     {
         try {
-            $task = $this->getTask($request->talkId);
-    
+
+            $task = $this->taskService->findByIdWithRelations($request->talkId);
+
             if (!$task) {
-                return $this->respondNotFound('Task not found');
+                return $this->responseService->respondNotFound('Task not found');
             }
-    
-            $comments = $this->getTaskComments($request->talkId);
-            $users = $this->getUsers();
-    
+
+            $comments = $this->commentService->getCommentsForTask($request->talkId);
+            $users = $this->userService->getAllUsers();
+
             return response()->json([
                 'success' => true,
                 'task' => $task,
@@ -30,71 +40,31 @@ class CommentsController extends Controller
                 'users' => $users,
                 'message' => 'Task loaded successfully.'
             ], 200);
-    
+
         } catch (\Exception $e) {
-            return $this->respondWithError('Error fetching task data', $e);
+
+            return $this->responseService->respondWithError('Error fetching task data', $e);
+            
         }
     }
-   
 
     public function store(Request $request)
     {
         try {
-            $task = Tasks::find($request->task_id);
-            $task->user_updated_id = $request->user_id;
-            $task->status = $request->task_status;
-            $task->save();
-
-            $comments = new Comments();
-            $comments->content = $request->content;
-            $comments->task_id = $request->task_id;
-            $comments->user_created_id = $request->user_id;
-            $comments->save();
+            $this->taskService->updateTaskStatus($request->task_id, $request->task_status, $request->user_id);
+            $this->commentService->createComment($request->only(['task_id', 'content', 'user_id']));
 
             return response()->json([
                 'success' => true,
                 'message' => 'Comment added and task updated.'
-                // 'comment' => $comment
             ], 201);
-    
-        } catch (ModelNotFoundException $e) {
-            return $this->respondNotFound('Task not found.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->responseService->respondNotFound('Task not found.');
+
         } catch (\Exception $e) {
-            return $this->respondWithError('Unexpected error.', $e);
+            return $this->responseService->respondWithError('Unexpected error.'. $e);
         }
     }
 
-    private function getTask($id)
-    {
-        return Tasks::with(['userCreated', 'building', 'userUpdated'])->find($id);
-    }
-    
-    private function getUsers()
-    {
-        return User::latest()->get();
-    }
-    
-    private function getTaskComments($taskId)
-    {
-        return Comments::with('userCreated')
-            ->where('task_id', $taskId)
-            ->get();
-    }
-    
-    private function respondNotFound($message)
-    {
-        return response()->json([
-            'success' => false,
-            'message' => $message
-        ], 404);
-    }
-    
-    private function respondWithError($message, $exception)
-    {
-        return response()->json([
-            'success' => false,
-            'message' => $message,
-            'error' => $exception->getMessage()
-        ], 500);
-    }
 }

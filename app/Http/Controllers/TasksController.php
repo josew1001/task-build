@@ -7,13 +7,25 @@ use App\Models\Tasks;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use App\Services\TaskService;
+use App\Services\CommentService;
+use App\Services\UserService;
+use App\Services\ResponseService;
+
 
 class TasksController extends Controller
 {
+
+    public function __construct(
+        protected TaskService $taskService,
+        protected CommentService $commentService,
+        protected UserService $userService,
+        protected ResponseService $responseService
+    ) {}
+
     public function store(Request $request)
     {
         try {
-            // Create and save the new task.
             $task = new Tasks();
             $task->title = $request->title;
             $task->description = $request->description;
@@ -29,22 +41,16 @@ class TasksController extends Controller
                 'task' => $task
             ], 201); // 201 Created
     
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Task creation failed',
-                'error' => $e->getMessage()
-            ], 500); // 500 Internal Server Error
+        } catch (\Exception $e) {            
+            return $this->responseService->respondWithError('Unexpected error.'. $e);
         }
     }
 
     public function index(Request $request)
     {
         try{
-            // Start the query to retrieve tasks with associated data (userCreated, building, userUpdated).
             $tasks = Tasks::with('userCreated', 'building', 'userUpdated');
     
-            // Apply search filters if provided
             if ($request->searchQuery != '') {
                 $tasks = $tasks->where('title', 'like', '%' . $request->searchQuery . '%')
                     ->orWhere('description', 'like', '%' . $request->searchQuery . '%');
@@ -64,10 +70,8 @@ class TasksController extends Controller
     
             $tasks = $tasks->latest()->get();
     
-            // Retrieve the filtered tasks, ordered by the latest
             $buildings = Buildings::latest()->get();
     
-            // Load the buildings and users for dropdown options
             $users = User::latest()->get();
     
             return response()->json([
@@ -77,11 +81,7 @@ class TasksController extends Controller
                 'users' => $users
             ], 200); // 200 OK
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Task creation failed',
-                'error' => $e->getMessage()
-            ], 500); // 500 Internal Server Error
+            return $this->responseService->respondWithError('Unexpected error.'. $e);
         }
     }
 

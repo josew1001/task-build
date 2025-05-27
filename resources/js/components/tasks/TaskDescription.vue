@@ -68,7 +68,7 @@ const newComment = async () => {
         toast.fire({ icon: "success", title: "Task Added Successfully" });        
         clearForm();
     } catch (error) {
-        toast.fire({ icon: "error", title: error.response.data.message || "CCCCCCCCCCcccccError accessing base data." });
+        toast.fire({ icon: "error", title: error.response.data.message || "Error accessing base data." });
         console.log( error.response.data.error );
     }
 }
