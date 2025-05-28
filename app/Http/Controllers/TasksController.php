@@ -26,60 +26,28 @@ class TasksController extends Controller
     public function store(Request $request)
     {
         try {
-            $task = new Tasks();
-            $task->title = $request->title;
-            $task->description = $request->description;
-            $task->status = $request->status ?? 'open';
-            $task->building_id = $request->building ?? 1;
-            $task->user_created_id = $request->user_id;
-            $task->user_updated_id = $request->user_id;
-            $task->save();
-    
-            return response()->json([
-                'success' => true,
-                'message' => 'Task created successfully',
-                'task' => $task
-            ], 201); // 201 Created
-    
-        } catch (\Exception $e) {            
-            return $this->responseService->respondWithError('Unexpected error.'. $e);
+
+            $task = $this->taskService->createTask($request->all());
+
+            return $this->responseService->respondCreated('Task created successfully.', $task);
+
+        } catch (\Exception $e) {
+            return $this->responseService->respondWithError('Unexpected error while creating task.', $e);
         }
     }
+
 
     public function index(Request $request)
     {
         try{
-            $tasks = Tasks::with('userCreated', 'building', 'userUpdated');
-    
-            if ($request->searchQuery != '') {
-                $tasks = $tasks->where('title', 'like', '%' . $request->searchQuery . '%')
-                    ->orWhere('description', 'like', '%' . $request->searchQuery . '%');
-            }
-    
-            if ($request->assignedUser != '') {
-               $tasks = $tasks->where('user_updated_id', $request->assignedUser);
-            }
-    
-            if ($request->building != '') {
-                $tasks = $tasks->where('building_id', $request->building);
-            }
-    
-            if ($request->startDate != '' && $request->endDate != '') {
-               $tasks = $tasks->whereBetween('created_at', [$request->startDate, $request->endDate]);
-            }
-    
-            $tasks = $tasks->latest()->get();
+            
+            $tasks = $this->taskService->filterTasks($request->all());
     
             $buildings = Buildings::latest()->get();
     
             $users = User::latest()->get();
-    
-            return response()->json([
-                'success' => true,
-                'tasks' => $tasks,
-                'buildings' => $buildings,
-                'users' => $users
-            ], 200); // 200 OK
+            
+            return $this->responseService->respondWithData( $tasks, $buildings, $users );
         } catch (\Exception $e) {
             return $this->responseService->respondWithError('Unexpected error.'. $e);
         }
